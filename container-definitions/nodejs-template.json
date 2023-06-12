@@ -1,0 +1,41 @@
+[
+  {
+    "name": "${service_name}",
+    "image": "${account_id}.dkr.ecr.${aws_region}.amazonaws.com/${service_name}-${environment}:${image_tag}",
+    "cpu": 512,
+    "memory": 1024,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "hostPort": 8000,
+        "protocol": "tcp"
+      }
+    ],
+    "environmentFiles": [
+      {
+        "value": "arn:aws:s3:::ify-demo/node.env",
+        "type": "s3"
+      }
+    ],
+    "healthCheck": {
+      "retries": 3,
+      "timeout": 5,
+      "interval": 30,
+      "startPeriod": 60,
+      "command": [
+        "CMD-SHELL",
+        "curl -f http://localhost:${service_port}/ || exit 1"
+      ]
+    },
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-region": "${aws_region}",
+        "awslogs-group" : "/ecs/${service_name}-${environment}",
+        "awslogs-stream-prefix": "${service_name}-${environment}"
+      }
+    },
+    "networkMode": "awsvpc"
+  }
+]
